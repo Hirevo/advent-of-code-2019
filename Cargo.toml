@@ -1,0 +1,9 @@
+[package]
+name = "aoc-2019"
+version = "0.1.0"
+description = "Solutions to the 2019 edition of the Advent of Code"
+edition = "2018"
+authors = ["Nicolas Polomack <nicolas@polomack.eu>"]
+
+[dependencies]
+rayon = { version = "1.2.1" }
