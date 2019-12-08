@@ -108,7 +108,7 @@ fn main() -> Result<(), Error> {
         dbg!(found).map(|(noun, verb)| 100 * noun + verb)
     };
     println!(
-        "{0:?}",
+        "{0}",
         part2.expect("couldn't find any matching noun and verb")
     );
 
