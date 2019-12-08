@@ -1,10 +1,10 @@
 Advent of Code 2019
 ===================
 
-This are my solutions for the 2019 edition of the [**Advent of Code**](https://adventofcode.com).  
+These are my solutions for the 2019 edition of the [**Advent of Code**](https://adventofcode.com).  
 These solutions are all implemented in [**Rust**](https://rust-lang.org).  
 
-I started a bit late (Dec 8, 2019) but I haven't spoiled my self any solutions yet, so I'll be catching up.  
+I started a bit late (Dec 8, 2019) but I haven't spoiled myself any solutions yet, so I'll be catching up.  
 
 How to run
 ----------
