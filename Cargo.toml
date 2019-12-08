@@ -7,4 +7,4 @@ authors = ["Nicolas Polomack <nicolas@polomack.eu>"]
 
 [dependencies]
 rayon = { version = "1.2.1" }
-derive_more = "0.99.2"
+derive_more = { version = "0.99.2" }
