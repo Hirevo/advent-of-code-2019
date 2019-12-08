@@ -111,7 +111,7 @@ fn main() -> Result<(), Error> {
     let part2 = visited
         .iter()
         .filter(|(_, (v1, v2))| v1.is_some() && v2.is_some())
-        .flat_map(|(_, (v1, v2))| v1.into_iter().zip(v2.into_iter()))
+        .flat_map(|(_, &(v1, v2))| v1.into_iter().zip(v2.into_iter()))
         .map(|(v1, v2)| v1 + v2)
         .min()
         .expect("found no intersections");

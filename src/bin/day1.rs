@@ -6,7 +6,7 @@ fn main() -> Result<(), Error> {
     let part1: u64 = INPUT
         .split('\n')
         .flat_map(|text| text.parse::<u64>().ok())
-        .map(|mass| (mass / 3).checked_sub(2).unwrap_or(0))
+        .map(|mass| (mass / 3).saturating_sub(2))
         .sum();
 
     let part2: u64 = INPUT
@@ -15,7 +15,7 @@ fn main() -> Result<(), Error> {
         .map(|mut mass| {
             let mut total = 0;
             while mass > 0 {
-                mass = (mass / 3).checked_sub(2).unwrap_or(0);
+                mass = (mass / 3).saturating_sub(2);
                 total += mass;
             }
             total

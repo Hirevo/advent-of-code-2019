@@ -100,11 +100,13 @@ fn main() -> Result<(), Error> {
         let inputs: Vec<(usize, usize)> = (0..=99)
             .flat_map(|i| (0..=99).map(move |j| (i, j)))
             .collect();
+
         let found = inputs.into_par_iter().find_any(|(noun, verb)| {
             interpreter
                 .run(*noun, *verb)
-                .map_or(false, |ret| ret == 19690720)
+                .map_or(false, |ret| ret == 19_690_720)
         });
+
         found
             .map(|(noun, verb)| 100 * noun + verb)
             .expect("couldn't find any matching noun and verb")
