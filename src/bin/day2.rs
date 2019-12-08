@@ -36,7 +36,7 @@ impl Interpreter {
                     *(memory.get_mut(arg3)?) = match opcode {
                         1 => val1 + val2,
                         2 => val1 * val2,
-                        _ => unreachable!(),
+                        _ => return None,
                     };
 
                     cursor += 4;
@@ -46,7 +46,7 @@ impl Interpreter {
             }
         }
 
-        Some(memory[0])
+        Some(*(memory.get(0)?))
     }
 
     /// Run the program with the given noun and verb.
@@ -72,7 +72,7 @@ impl Interpreter {
                     memory[arg3] = match opcode {
                         1 => val1 + val2,
                         2 => val1 * val2,
-                        _ => unreachable!(),
+                        _ => return None,
                     };
 
                     cursor += 4;
@@ -105,9 +105,10 @@ fn main() -> Result<(), Error> {
                 .run(*noun, *verb)
                 .map_or(false, |ret| ret == 19690720)
         });
-        found.map(|(noun, verb)| 100 * noun + verb)
-    }
-    .expect("couldn't find any matching noun and verb");
+        found
+            .map(|(noun, verb)| 100 * noun + verb)
+            .expect("couldn't find any matching noun and verb")
+    };
     println!("{0}", part2);
 
     Ok(())
