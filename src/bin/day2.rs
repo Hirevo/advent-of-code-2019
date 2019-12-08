@@ -105,12 +105,10 @@ fn main() -> Result<(), Error> {
                 .run(*noun, *verb)
                 .map_or(false, |ret| ret == 19690720)
         });
-        dbg!(found).map(|(noun, verb)| 100 * noun + verb)
-    };
-    println!(
-        "{0}",
-        part2.expect("couldn't find any matching noun and verb")
-    );
+        found.map(|(noun, verb)| 100 * noun + verb)
+    }
+    .expect("couldn't find any matching noun and verb");
+    println!("{0}", part2);
 
     Ok(())
 }
