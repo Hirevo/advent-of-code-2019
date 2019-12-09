@@ -1,8 +1,6 @@
-use aoc_2019::Error;
-
 pub static INPUT: &str = include_str!("../../inputs/day1.txt");
 
-fn main() -> Result<(), Error> {
+fn main() {
     let part1: u64 = INPUT
         .split('\n')
         .flat_map(|text| text.parse::<u64>().ok())
@@ -24,6 +22,4 @@ fn main() -> Result<(), Error> {
 
     println!("{0}", part1);
     println!("{0}", part2);
-
-    Ok(())
 }

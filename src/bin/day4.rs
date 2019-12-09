@@ -1,5 +1,3 @@
-use aoc_2019::Error;
-
 pub static INPUT: (isize, isize) = (240_920, 789_857);
 
 fn is_valid_candidate(mut candidate: isize) -> bool {
@@ -47,7 +45,7 @@ fn is_valid_candidate2(mut candidate: isize) -> bool {
     cond1 && cond2
 }
 
-fn main() -> Result<(), Error> {
+fn main() {
     let (low, high) = INPUT;
 
     let part1 = (low..=high)
@@ -59,6 +57,4 @@ fn main() -> Result<(), Error> {
         .filter(|value| is_valid_candidate2(*value))
         .count();
     println!("{0}", part2);
-
-    Ok(())
 }

@@ -1,7 +1,5 @@
 use rayon::prelude::*;
 
-use aoc_2019::Error;
-
 pub static INPUT: &str = include_str!("../../inputs/day2.txt");
 
 pub struct Interpreter {
@@ -86,7 +84,7 @@ impl Interpreter {
     }
 }
 
-fn main() -> Result<(), Error> {
+fn main() {
     let program = INPUT
         .split(',')
         .flat_map(|chunk| chunk.parse().ok())
@@ -112,6 +110,4 @@ fn main() -> Result<(), Error> {
             .expect("couldn't find any matching noun and verb")
     };
     println!("{0}", part2);
-
-    Ok(())
 }

@@ -3,12 +3,9 @@ extern crate derive_more;
 
 use std::collections::HashMap;
 
-use aoc_2019::Error;
-
 pub static INPUT: &str = include_str!("../../inputs/day3.txt");
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Display, Add, Sub, AddAssign, SubAssign)]
-#[display(fmt = "({},{})", _0, _1)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Add, Sub, AddAssign, SubAssign)]
 pub struct Point(isize, isize);
 
 impl Point {
@@ -46,7 +43,7 @@ impl From<Direction> for Point {
     }
 }
 
-fn main() -> Result<(), Error> {
+fn main() {
     let mut iter = INPUT.split('\n').take(2).map(|wire| {
         wire.split(',').flat_map(|instr| {
             let (dir, val) = {
@@ -116,6 +113,4 @@ fn main() -> Result<(), Error> {
         .min()
         .expect("found no intersections");
     println!("{0}", part2);
-
-    Ok(())
 }
