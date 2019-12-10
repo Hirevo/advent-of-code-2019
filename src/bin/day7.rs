@@ -370,9 +370,7 @@ async fn main() {
                         tx.send(phase).await;
                         let ntx = channels[idx + 1].0.clone();
                         let interpreter = Interpreter::new(program.clone());
-                        task::spawn(async move {
-                            interpreter.run_async(rx, ntx).await
-                        });
+                        task::spawn(async move { interpreter.run_async(rx, ntx).await });
                     }
                     let tx = channels[0].0.clone();
                     let rx = channels[5].1.clone();
