@@ -1,3 +1,4 @@
+use std::collections::VecDeque;
 use std::convert::TryFrom;
 
 use async_std::sync;
@@ -360,41 +361,55 @@ async fn main() {
     println!("{0}", part1);
 
     let part2 = {
-        // This constructs an iterator that yields futures where each future is a different and complete run of the feedback loop.
-        let iter = (5..10).permutations(5).map(|sequence| {
-            async {
-                let (tx, rx) = {
-                    let channels: Vec<_> = (0..=5).map(|_| sync::channel::<isize>(1)).collect();
-                    for (idx, phase) in sequence.into_iter().enumerate() {
-                        let (tx, rx) = channels[idx].clone();
-                        tx.send(phase).await;
-                        let ntx = channels[idx + 1].0.clone();
-                        let interpreter = Interpreter::new(program.clone());
-                        task::spawn(async move { interpreter.run_async(rx, ntx).await });
-                    }
-                    let tx = channels[0].0.clone();
-                    let rx = channels[5].1.clone();
-                    (tx, rx)
-                };
-                let mut output = None;
-                tx.send(0).await;
-                while let Some(value) = rx.recv().await {
-                    output.replace(value);
-                    tx.send(value).await;
-                }
-                output
-            }
-        });
         let mut max = None::<isize>;
-        for fut in iter {
-            let value = fut.await;
-            max = match (max, value) {
-                (Some(max), Some(val)) => Some(max.max(val)),
+        for sequence in (5..10).permutations(5) {
+            let (tx, rx) = {
+                // create channels
+                let (mut txs, mut rxs) = (0..=5).fold(
+                    (VecDeque::with_capacity(6), VecDeque::with_capacity(6)),
+                    |(mut txs, mut rxs), _| {
+                        let (tx, rx) = sync::channel::<isize>(1);
+                        txs.push_back(tx);
+                        rxs.push_back(rx);
+                        (txs, rxs)
+                    },
+                );
+
+                // initialize phase sequences (except last one, `Iterator::zip` takes care of that already)
+                for (tx, phase) in txs.iter().zip(sequence.into_iter()) {
+                    tx.send(phase).await;
+                }
+
+                // extract pipeline handles
+                let tx = txs.pop_front().expect("no channels ??");
+                let rx = rxs.pop_back().expect("no channels ??");
+
+                // spawn tasks
+                for (tx, rx) in txs.into_iter().zip(rxs.into_iter()) {
+                    let interpreter = Interpreter::new(program.clone());
+                    task::spawn(async move { interpreter.run_async(rx, tx).await });
+                }
+
+                (tx, rx)
+            };
+
+            // send first value and wait until last output
+            tx.send(0).await;
+            let mut output = None;
+            while let Some(value) = rx.recv().await {
+                output.replace(value);
+                tx.send(value).await;
+            }
+
+            // save if highest output seen yet
+            max = match (max, output) {
+                (Some(max), Some(output)) => Some(max.max(output)),
                 (Some(max), None) => Some(max),
                 (None, Some(val)) => Some(val),
                 (None, None) => None,
             };
         }
+
         max.expect("not a single valid phase sequence")
     };
     println!("{0}", part2);
