@@ -1,10 +1,10 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::convert::TryFrom;
+use std::io;
+use std::io::Write;
 
 use async_std::sync;
 use async_std::task;
-use image::*;
-use itertools::Itertools;
 
 pub static INPUT: &str = include_str!("../../inputs/day11.txt");
 
@@ -242,107 +242,60 @@ async fn main() {
         .flat_map(|chunk| chunk.parse().ok())
         .collect();
 
-    let part1 = {
-        let interpreter = Interpreter::new(program.clone());
+    let interpreter = Interpreter::new(program.clone());
 
-        let (tx1, rx1) = sync::channel::<isize>(1);
-        let (tx2, rx2) = sync::channel::<isize>(1);
+    let (tx1, rx1) = sync::channel::<isize>(1);
+    let (tx2, rx2) = sync::channel::<isize>(1);
 
-        task::spawn(async move {
-            interpreter
-                .run_async(rx1, tx2)
-                .await
-                .expect("invalid program")
+    task::spawn(async move {
+        interpreter
+            .run_async(rx1, tx2)
+            .await
+            .expect("invalid program")
+    });
+
+    let mut pos = (0isize, 0isize);
+    let mut dir = 0isize;
+    let dirs = [(0, -1), (-1, 0), (0, 1), (1, 0)];
+    let mut image = HashMap::new();
+    tx1.send(1).await;
+    while let Some(val) = rx2.recv().await {
+        image.insert(pos, val);
+        dir = match rx2.recv().await.unwrap() {
+            0 => (dir + 1) % 4,
+            1 => (dir + 3) % 4,
+            _ => unreachable!(),
+        };
+        let dir = dirs[dir as usize];
+        pos = (pos.0 + dir.0, pos.1 + dir.1);
+        tx1.send(image.get(&pos).copied().unwrap_or(0)).await;
+    }
+
+    let part1 = image.len();
+    println!("part 1: {0:?}", part1);
+
+    // get bounds of image
+    let ((lx, gx), (ly, gy)) = image
+        .keys()
+        .copied()
+        .fold(((0, 0), (0, 0)), |((lx, gx), (ly, gy)), (x, y)| {
+            ((lx.min(x), gx.max(x)), (ly.min(y), gy.max(y)))
         });
 
-        let mut pos = (0isize, 0isize);
-        let mut dir = (0isize, 1isize);
-        let mut map = HashMap::new();
-        tx1.send(0).await;
-        while let Some(val) = rx2.recv().await {
-            map.insert(pos, val);
-            dir = match rx2.recv().await.unwrap() {
-                0 => match dir {
-                    (0, 1) => (-1, 0),
-                    (0, -1) => (1, 0),
-                    (1, 0) => (0, 1),
-                    (-1, 0) => (0, -1),
-                    _ => unreachable!(),
-                },
-                1 => match dir {
-                    (0, 1) => (1, 0),
-                    (0, -1) => (-1, 0),
-                    (1, 0) => (0, -1),
-                    (-1, 0) => (0, 1),
-                    _ => unreachable!(),
-                },
-                _ => unreachable!(),
-            };
-            pos = (pos.0 + dir.0, pos.1 + dir.1);
-            tx1.send(map.get(&pos).copied().unwrap_or(0)).await;
+    println!("part 2:");
+    let stdout = io::stdout();
+    let mut stdout = stdout.lock();
+    for y in ly..=gy {
+        for x in lx..=gx {
+            let _ = write!(
+                stdout,
+                "{}",
+                image
+                    .get(&(x, y))
+                    .map(|&val| if val == 0 { ' ' } else { 'X' })
+                    .unwrap_or(' ')
+            );
         }
-        map.len()
-    };
-    println!("{0:?}", part1);
-
-    let _part2 = {
-        let width = map.keys().map(|(x, _)| x).max().copied().unwrap() + 50;
-        let height = map.keys().map(|(_, y)| y).max().copied().unwrap() + 50;
-
-        let interpreter = Interpreter::new(program);
-
-        let (tx1, rx1) = sync::channel::<isize>(1);
-        let (tx2, rx2) = sync::channel::<isize>(1);
-
-        task::spawn(async move {
-            interpreter
-                .run_async(rx1, tx2)
-                .await
-                .expect("invalid program")
-        });
-
-        let mut pos = (50isize, 50isize);
-        let mut dir = (0isize, 1isize);
-        let mut pixels = vec![0u8; (width * height) as usize];
-        tx1.send(1).await;
-        while let Some(val) = rx2.recv().await {
-            pixels[(pos.1 * width + pos.0) as usize] = val as u8;
-            dir = match rx2.recv().await.unwrap() {
-                0 => match dir {
-                    (0, 1) => (-1, 0),
-                    (0, -1) => (1, 0),
-                    (1, 0) => (0, 1),
-                    (-1, 0) => (0, -1),
-                    _ => unreachable!(),
-                },
-                1 => match dir {
-                    (0, 1) => (1, 0),
-                    (0, -1) => (-1, 0),
-                    (1, 0) => (0, -1),
-                    (-1, 0) => (0, 1),
-                    _ => unreachable!(),
-                },
-                _ => unreachable!(),
-            };
-            pos = (pos.0 + dir.0, pos.1 + dir.1);
-            tx1.send(pixels[(pos.1 * width + pos.0) as usize] as isize)
-                .await;
-        }
-
-        let buffer = pixels
-            .into_iter()
-            .map(|val| match val {
-                0 => 0u8,
-                1 => 255u8,
-                _ => unreachable!(),
-            })
-            .collect::<Vec<_>>();
-        image::save_buffer(
-            "out.jpg",
-            buffer.as_slice(),
-            width as u32,
-            height as u32,
-            image::Gray(8),
-        );
-    };
+        let _ = writeln!(stdout);
+    }
 }
